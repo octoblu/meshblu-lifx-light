@@ -13,6 +13,9 @@ var conx = meshblu.createConnection({
 conx.on('notReady', console.error);
 conx.on('error', console.error);
 
+process.on('uncaughtException', function(error){
+  console.error('error (this may not be a problem)', error);
+});
 var plugin = new Plugin();
 
 conx.on('ready', function(){

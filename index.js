@@ -5,6 +5,8 @@ var EventEmitter = require('events').EventEmitter;
 var lifx = require('lifx');
 var tinycolor = require('tinycolor2');
 var debug = require('debug')('meshblu-lifx-light')
+var Client = require('node-lifx').Client;
+var Light = require('node-lifx').Light;
 
 var UINT16_MAX = 65535;
 var MAX_KELVIN = 9000;
@@ -57,43 +59,51 @@ Plugin.prototype.onConfig = function(device){
 };
 
 Plugin.prototype.setOptions = function(options){
-  this.options = options;
-  this._lifx = undefined;
-  this._bulb = undefined;
+  this.options = options || {};
+  this.client = undefined;
   this.setupLifx();
 };
 
 Plugin.prototype.setupLifx = function() {
-  var lightId = this.lightId;
-  if(!lightId){
-    return console.error('No light id');
-  }
-  this._lifx = lifx.init();
-  debug('searching for light id', lightId);
-  this._bulb = _.find(this._lifx.bulbs, {id: lightId});
-  debug('found bulb', this._bulb);
-
+  this.client = new Client();
+  this.client.init()
 }
 
 Plugin.prototype.updateLifx = function(payload) {
-  var hsv, hue, sat, bri, temp, bulb, bulbName, timing;
+  var hsv, hue, sat, bri, temp, timing;
 
   if (payload.on === false) {
-    debug('black light', bulb);
+    debug('black light');
     payload.color = 'rgba(0,0,0,0.0)';
   }
 
   hsv      = tinycolor(payload.color).toHsv();
-  hue      = parseInt((hsv.h/360) * UINT16_MAX);
-  sat      = parseInt(hsv.s * UINT16_MAX);
-  bri      = parseInt(hsv.v * hsv.a * UINT16_MAX);
+  hue      = parseInt((hsv.h/360) * 360);
+  sat      = parseInt(hsv.s * 100);
+  bri      = parseInt(hsv.v * hsv.a * 100);
   temp     = parseInt(hsv.a * MAX_KELVIN);
   timing   = payload.timing || 0;
 
-  var bulb = this._bulb;
-  debug('lightsColour', hue, sat, bri, temp, timing, bulb);
-  this._lifx.lightsOn(bulb);
-  this._lifx.lightsColour(hue, sat, bri, temp, timing, bulb);
+  var lightId = this.options.lightId;
+  if(!lightId){
+    return console.error('No light id');
+  }
+  debug('lightId', lightId);
+  debug('light color', hue, sat, bri, temp, timing);
+  var light = this.client.light(lightId);
+  debug('light', light);
+  if(!light){
+    return console.error('No light found');
+  }
+  var newLight = {
+    client : this.client,
+    id: light.id,
+    address: light.address,
+    port: light.port,
+    status: light.status
+  };
+  var lightDevice = new Light(newLight);
+  lightDevice.color(hue, sat, bri, temp, timing);
 }
 
 module.exports = {
