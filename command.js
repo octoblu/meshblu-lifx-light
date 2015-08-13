@@ -14,7 +14,8 @@ conx.on('notReady', console.error);
 conx.on('error', console.error);
 
 process.on('uncaughtException', function(error){
-  console.error('error (this may not be a problem)', error);
+  console.error('If the following error is complaining about UDP, it is likely not a problem.');
+  console.error(error);
 });
 var plugin = new Plugin();
 

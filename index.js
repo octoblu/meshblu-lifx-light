@@ -24,9 +24,6 @@ var MESSAGE_SCHEMA = {
     },
     timing: {
       type: 'number'
-    },
-    white: {
-      type: 'number'
     }
   }
 };
@@ -34,7 +31,19 @@ var MESSAGE_SCHEMA = {
 var OPTIONS_SCHEMA = {
   type: 'object',
   properties: {
-    lightId: {
+    id: {
+      type: 'string',
+      required: true
+    },
+    address: {
+      type: 'string',
+      required: true
+    },
+    port: {
+      type: 'string',
+      required: true
+    },
+    status: {
       type: 'string',
       required: true
     }
@@ -84,20 +93,17 @@ Plugin.prototype.updateLifx = function(payload) {
   temp     = parseInt(hsv.a * MAX_KELVIN);
   timing   = payload.timing || 0;
 
-  var lightId = this.options.lightId;
+  debug('light color', hue, sat, bri, temp, timing);
+  var light = this.options || {};
+  var lightId = light.id || light.lightId;
   if(!lightId){
     return console.error('No light id');
   }
   debug('lightId', lightId);
-  debug('light color', hue, sat, bri, temp, timing);
-  var light = this.client.light(lightId);
   debug('light', light);
-  if(!light){
-    return console.error('No light found');
-  }
   var newLight = {
     client : this.client,
-    id: light.id,
+    id: lightId,
     address: light.address,
     port: light.port,
     status: light.status
