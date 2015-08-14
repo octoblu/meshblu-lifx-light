@@ -2,7 +2,6 @@
 var util = require('util');
 var _ = require('lodash');
 var EventEmitter = require('events').EventEmitter;
-var lifx = require('lifx');
 var tinycolor = require('tinycolor2');
 var debug = require('debug')('meshblu-lifx-light')
 var Client = require('node-lifx').Client;
