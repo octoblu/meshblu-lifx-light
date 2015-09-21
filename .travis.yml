@@ -1,0 +1,36 @@
+language: node_js
+node_js:
+- '0.10'
+before_install:
+  - npm install npm -g
+before_deploy:
+  - npm install ws browserify coffeeify
+  - mkdir -p deploy/meshblu-lifx-light/latest
+  - mkdir -p deploy/meshblu-lifx-light/$TRAVIS_TAG
+  - node_modules/.bin/browserify -t coffeeify -s Connector connector.js > deploy/meshblu-lifx-light/latest/meshblu-lifx-light.js
+  - gzip deploy/meshblu-lifx-light/latest/meshblu-lifx-light.js
+  - mv deploy/meshblu-lifx-light/latest/meshblu-lifx-light.js.gz deploy/meshblu-lifx-light/latest/meshblu-lifx-light.js
+  - cp deploy/meshblu-lifx-light/latest/meshblu-lifx-light.js deploy/meshblu-lifx-light/$TRAVIS_TAG/meshblu-lifx-light.js
+deploy:
+  - provider: s3
+    region: us-west-2
+    skip_cleanup: true
+    detect_encoding: true
+    access_key_id: AKIAJH2D5IPIRHYJT5IA
+    secret_access_key:
+      secure: "bwDuIpotxRtgxClKRbvjILYIcCHQtFXO75siI2rrHwqW8hPfPwV+CYqsUS080U50sD79T84z9Is++Y7o+SOzcInVFjlotP1NpveOtcVCmogFTcaDCb0PIlXCANmhlplvxg0NqCz+WjbjijFtLo1dxdzUzOXN2ZqL7NcVxRuGYhJAr0dleuHumZ7Sl7v3xFnNXePh1zxs4UKuJjNfVQ0SVYjS2y2tmWxxqAnegUH5APLiYUM2cgy6/cowbRcKk2iicuSMAQtKnuXjGERDs/VAhosdR2VAKhdBmxJ5uvR3uOLrAB//BoP1WRvuz5IlvcBa6EmiCuYVSyp1Y/NDQORKqmQ+lrpsb+QOXseD16SUioYBKeC7/poBYq3DmXD4uRqF8DQugsEgI3ltleCsDVM8Ta816fWb424bPPGQAciFa+Ndj8Iz/rU20PPbaxLnh7qLytZqaVVD0dvleaQ+bs4Pcz+swLZjDkpCkSqj/LKUAW/2NV3Sg2wGkjHkdcDtVoRQIvCGPSb+XZNJv9ITkOOUtM8ow17/SNurTIbhm+0b31hZVDdWt66FMBVNycAZFwmd+lKcZFvuZVf04hkh9X6MIx1nH9m+PR9GTTti/c4BMFCFCkQbLGwbxAQm73IBAKlNOYcSoc/SI+irTor8DP8MxPhDSXPrBCxe003CNUNe0Og="
+    bucket: octoblu-cdn
+    local-dir: deploy
+    upload-dir: js
+    on:
+      tags: true
+      all_branches: true
+  - provider: npm
+    skip_cleanup: true
+    clean_up: false
+    email: serveradmin@octoblu.com
+    api_key:
+      secure: "BeKYL2w/uikYYOhKbW6bh2E4/hYx83j8dOEZw3b8tIP9Rfp+WwHhOQC6tizFn4aTfUrLnwMRZ6ejIvPf5tHcAYw1UtJXABvRR+6SyugkNr3xGhiG5df3D+FmQ3MF8cuKi33pmE72Pyv2JZHxQV7TXUtmbFNRt/qB5maJcLJ7im8l0V/IkybjdnT0GMLmBiUHoUCowvG8OZTdGJ4eXSf+I9ZC+vQUMkmtGAPp1evmH8iFMuxqhaOXdmg7z/Ft/b2lGqvgPGQEsziOQrQcA/efJNhMG9ikQzznsBAxxEcmIy3l22fE1S7yTSveZiOcMoVptG7vJRDKU2E+SGVBokHVNvqZ6gwXyv7kPzbZnn5R6HkAj6mPv11XxWse1tx0Aymelr+FPzgBXsMAkEKBY6vZvfGednBmai7SIu+pwz0o4TGKbku63W3Vun6864MfbUrl0hLQKmfkJbRK50RIn8sD45EcmqX3Yk4dq4lvYdo/nvgFg6iik0Dl+LR2a9dgohVBBrJbwV0aGa8tDv/0ZQY8ioCj8oW+nkF3YMYZvYcxPeW+3hgV16mFRUPp+g/2bPdvZnSRT9v6nJ++sF2IEUvQUWtD6TcOlt+PFrfB2IcRozG5BK1m/6zS0qo9zqThrFW1q0A99rPPGElTZSUcQz8VIo+4nQuaqpRNKxdoPBSyNg0="
+    on:
+      tags: true
+      all_branches: true
